@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<!-- 配置Spring自动扫描类,通过base-package指定扫描的包名  使用了Ant通配符 -->
+	<context:component-scan base-package="com.artisan.*.service.impl"/>
+	
+	<!-- 数据源 -->
+	<bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource">
+        <property name="driver" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/artisan"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+    
+    
+    <!-- 配置SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="configLocation" value="classpath:mybatisConfig.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:com/artisan/**/mapper/*.xml</value>
+            </array>
+        </property>
+        <property name="typeAliasesPackage" value="com.artisan.web.model"/>
+    </bean>
+    
+     <!-- 配置MapperScannerConfigurer -->
+	 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="addToConfig" value="true"/>
+        <property name="basePackage" value="com.artisan.**.mapper"/>
+    </bean>
+    
+    
+    <aop:aspectj-autoproxy/>
+
+    <aop:config>
+        <aop:pointcut id="appService" expression="execution(* com.artisan.*.service..*Service*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="appService"/>
+    </aop:config>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="select*" read-only="true"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+</beans>

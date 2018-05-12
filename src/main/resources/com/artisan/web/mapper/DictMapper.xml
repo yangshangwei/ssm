@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!-- 当Mapper接口和XML文件关联的时候， namespace的值就需要配置成接口的全限定名称 -->
+<mapper namespace="com.artisan.web.mapper.DictMapper">
+
+	<select id="selectByPrimaryKey" resultType="com.artisan.web.model.SysDict">
+		SELECT
+		a.id,
+		a.`code`,
+		a.`name`,
+		a.`value`
+		FROM
+		sys_dict a
+		WHERE
+		a.id = #{id}
+	</select>
+
+	<select id="selectBySysDict" resultType="com.artisan.web.model.SysDict">
+		select * from sys_dict
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="code != null and code != ''">
+				and code = #{code}
+			</if>
+		</where>
+		order by code, `value`
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		insert
+		into sys_dict(code, name, value)
+		values (#{code}, #{name}, #{value})
+	</insert>
+
+	<update id="updateById">
+		update 
+		sys_dict
+		set code = #{code},
+		name = #{name},
+		value = #{value}
+		where id = #{id}
+	</update>
+
+	<delete id="deleteById">
+		delete from sys_dict where id = #{id}
+	</delete>
+
+</mapper>					
